@@ -21,4 +21,4 @@ Licencia
 MIT License
 
 Autor
-Diego Saavedra
+Grupo 2
