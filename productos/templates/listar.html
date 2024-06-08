@@ -1,17 +1,148 @@
 {% extends "base.html" %}
-{% block title %} Listar Productos {% endblock %}
+{% block title %}Listar Productos{% endblock %}
 {% block content %}
-<h1>Listar Productos</h1>
-<a href="{% url 'crear_producto' %}" class="btn btn-primary mb-3">Crear Producto</a>
-<ul class="list-group">
-    {% for producto in productos %}
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-        {{ producto.nombre }} - {{ producto.precio }} - {{ producto.cantidad }}
-        <div>
-            <a href="{% url 'editar_producto' producto.pk %}" class="btn btn-sm btn-primary">Editar</a>
-            <a href="{% url 'eliminar_producto' producto.pk %}" class="btn btn-sm btn-danger">Eliminar</a>
+<style>
+   html {
+       height: 100%;
+   }
+   body {
+       background-image: linear-gradient(to right, #FFFFFF, rgb(255, 122, 89));
+       height: 100%;
+       margin: 0;
+       display: flex;
+       justify-content: center;
+       align-items: center;
+   }
+   .container {
+       background: rgba(255, 255, 255, 0.8);
+       padding: 20px;
+       border-radius: 10px;
+       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+       width: 90%;
+       max-width: 1200px;
+   }
+   .table thead {
+       background-color: #f8f9fa;
+   }
+</style>
+<div class="container">
+    <h1 class="my-4">Listar Productos</h1>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <form action="{% url 'importar_productos_csv' %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="file" name="archivo_csv" accept=".csv" required class="form-control" id="archivo_csv">
+                    <button type="submit" class="btn btn-secondary">Importar Productos</button>
+                </div>
+            </form>
         </div>
-    </li>
-    {% endfor %}
-</ul>
+        <div class="col-md-6 text-md-end mt-2 mt-md-0">
+            <a href="{% url 'exportar_productos_csv' %}" class="btn btn-secondary">Exportar Productos</a>
+            <a href="{% url 'crear_producto' %}" class="btn btn-primary">Crear Producto</a>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="row mb-3">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Precio</th>
+                            <th>Cantidad</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for producto in productos %}
+                        <tr>
+                            <td>{{ producto.nombre }}</td>
+                            <td>{{ producto.precio }}</td>
+                            <td>{{ producto.cantidad }}</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editarModal{{ producto.pk }}">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <a href="#" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#eliminarModal{{ producto.pk }}">
+                                    <i class="fas fa-trash"></i> Eliminar
+                                </a>
+                            </td>
+                        </tr>
+
+                        <!--  para editar producto -->
+                        <div class="modal fade" id="editarModal{{ producto.pk }}" tabindex="-1" aria-labelledby="editarModalLabel{{ producto.pk }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="editarModalLabel{{ producto.pk }}">Editar Producto</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form method="post" action="{% url 'editar_producto' producto.pk %}">
+                                            {% csrf_token %}
+                                            <div class="mb-3">
+                                                <label for="id_nombre" class="form-label">Nombre</label>
+                                                <input type="text" name="nombre" class="form-control" value="{{ producto.nombre }}" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="id_precio" class="form-label">Precio</label>
+                                                <input type="number" name="precio" class="form-control" value="{{ producto.precio }}" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="id_cantidad" class="form-label">Cantidad</label>
+                                                <input type="number" name="cantidad" class="form-control" value="{{ producto.cantidad }}" required>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                <button type="submit" class="btn btn-primary">Guardar</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--  eliminar producto -->
+                        <div class="modal fade" id="eliminarModal{{ producto.pk }}" tabindex="-1" aria-labelledby="eliminarModalLabel{{ producto.pk }}" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="eliminarModalLabel{{ producto.pk }}">Eliminar Producto</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>¿Estás seguro de que quieres eliminar el producto "{{ producto.nombre }}"?</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        <form method="post" action="{% url 'eliminar_producto' producto.pk %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

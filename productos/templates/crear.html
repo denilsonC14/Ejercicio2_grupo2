@@ -1,10 +1,56 @@
 {% extends "base.html" %}
-{% block title %} Crear Producto {% endblock %}
+{% block title %}Crear Producto{% endblock %}
 {% block content %}
-<h1>Crear Producto</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Guardar</button>
-</form>
+<style>
+   html {
+       height: 100%;
+   }
+   body {
+       background-image: linear-gradient(to right, #FFFFFF, rgb(255, 122, 89));
+       height: 100%;
+       margin: 0;
+       display: flex;
+       justify-content: center;
+       align-items: center;
+   }
+   .container {
+       background: rgba(255, 255, 255, 0.8);
+       padding: 20px;
+       border-radius: 10px;
+       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+   }
+</style>
+<div class="container">
+    <h1 class="my-4">Crear Producto</h1>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="row">
+            {% for field in form %}
+            <div class="col-md-6 mb-3">
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.help_text %}
+                    <small class="form-text text-muted">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% if field.errors %}
+                    <div class="invalid-feedback">
+                        {{ field.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                <script>
+                    document.getElementById("id_{{ field.name }}").classList.add("form-control");
+                    {% if field.errors %}
+                    document.getElementById("id_{{ field.name }}").classList.add("is-invalid");
+                    {% endif %}
+                </script>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-right">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+    </form>
+</div>
 {% endblock %}
